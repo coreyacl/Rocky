@@ -61,18 +61,27 @@ float Kt = -0.176;
 float Jp = 13.9;
 float Ji = 53.2;
 
+
+
 float PWM;
+//float PWMR;
 float error2Accum = 0;
+//float error2AccumR = 0;
 float error1Accum = 0;
+//float error1AccumR = 0;
 float AccumV = 0;
+//float AccumVR = 0;
 
 float error1;
+//float error1R;
 float error2;
+//float error2R;
 float Vd;
+//float VdR;
 float Thetad = 0;
 
 
-
+ 
 LSM6 imu;
 Balboa32U4Motors motors;
 Balboa32U4Encoders encoders;
@@ -91,25 +100,36 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    Thetad = 0;
    AccumV += vL*delta_t;//integral of velocity over time 
 
-   error1 = Thetad - (-angleRad) + (Kt*AccumV);
+   error1 = Thetad - angleRad + (Kt*AccumV);
    error1Accum += error1*delta_t; //integral of error over time;
 
    Vd = Kp*(error1) + Ki*(error1Accum);
 
    error2 = Vd - vL;
+   //error2R = Vd - vR;
+   
    error2Accum += error2*delta_t; //integral of error over time
+   //error2AccumR += error2R*delta_t;
+
+   
 
    PWM = Jp*(error2) + Ji*(error2Accum);
+   //PWMR = Jp*(error2R) + Ji*(error2AccumR);
   
    
   leftMotorPWM = PWM;
   rightMotorPWM = PWM;
+  Serial1.println(PWM);
+  Serial1.println(PWM);
+  Serial1.println(" ");
+  Serial1.println(" ");
 }
 
 uint32_t prev_time;
 
 void setup()
 {
+  Serial1.begin(115200);
   prev_time = 0;
   ledYellow(0);
   ledRed(1);
@@ -175,9 +195,9 @@ void loop()
   }
 
   bool shouldPrint = cur_time - prev_print_time > 105;
-  if(shouldPrint)   // do the printing every 105 ms. Don't want to do it for an integer multiple of 10ms to not hog the processor
-  {
-        Serial.println(angle_rad);  
+//  if(shouldPrint)   // do the printing every 105 ms. Don't want to do it for an integer multiple of 10ms to not hog the processor
+ // {
+     //   Serial1.println(angle_rad);  
         /*Serial.print("\t");
         Serial.print(angle_rad_accum);  
         Serial.print("\t");
@@ -194,20 +214,20 @@ void loop()
         Serial.println(totalDistanceRight);*/
 
         prev_print_time = cur_time;
-/* Uncomment this and comment the above if doing wireless
-        Serial1.print(angle_rad);  
-        Serial1.print("\t");
-        Serial1.print(angle_rad_accum);  
-        Serial1.print("\t");
-        Serial1.print(PWM_left);
-        Serial1.print("\t");
-        Serial1.print(PWM_right);
-        Serial1.print("\t");
-        Serial1.print(vL);
-        Serial1.print("\t");
-        Serial1.println(vR);
-       */
-  }
+//Uncomment this and comment the above if doing wireless
+        //Serial1.print(angle_rad);  
+        //Serial1.print("\t");
+        //Serial1.print(angle_rad_accum);  
+        //Serial1.print("\t");
+        //Serial1.print(PWM_left);
+        //Serial1.print("\t");
+        //Serial1.print(PWM_right);
+        //Serial1.print("\t");
+        //Serial1.print(vL);
+        //Serial1.print("\t");
+        //Serial1.println(vR);
+      
+ // }
 
   float delta_t = (cur_time - prev_time)/1000.0;
 
@@ -239,6 +259,11 @@ void loop()
     start_flag = 1;
     armed_flag = 0;
     angle_rad_accum = 0.0;
+
+    AccumV = 0;
+    error1Accum = 0;
+    error2Accum = 0;
+    //error2AccumR = 0;
   }
 
   // every UPDATE_TIME_MS, if the start_flag has been set, do the balancing
