@@ -154,7 +154,7 @@ void lyingDown()
       
       // this is based on coarse measurement of what I think the angle would be resting on the flat surface. 
       // this corresponds to 94.8 degrees
-      angle = 94827-10000;
+      angle = 86300;
   
     }
     else

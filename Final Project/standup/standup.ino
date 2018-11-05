@@ -55,29 +55,31 @@ void balanceDoDriveTicks();
 extern int32_t displacement;
 int32_t prev_displacement=0;
 
-float Kp = -68.6;
-float Ki = -120.5;
-float Kt = -0.176;
-float Jp = 13.9;
-float Ji = 53.2;
+float Kp = -60;
+float Ki = -55;
+float Jp = 14;
+float Ji = 90;
+float Kt = -0.1;
+
+float PWMR;
+float error2AccumR = 0;
+float error1AccumR = 0;
+float AccumVR = 0;
+
+float error1R;
+float error2R;
+float VdR;
 
 
+float PWML;
+float error2AccumL = 0;
+float error1AccumL = 0;
+float AccumVL = 0;
 
-float PWM;
-//float PWMR;
-float error2Accum = 0;
-//float error2AccumR = 0;
-float error1Accum = 0;
-//float error1AccumR = 0;
-float AccumV = 0;
-//float AccumVR = 0;
+float error1L;
+float error2L;
+float VdL;
 
-float error1;
-//float error1R;
-float error2;
-//float error2R;
-float Vd;
-//float VdR;
 float Thetad = 0;
 
 
@@ -98,29 +100,38 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    *    angleRadAccum: the angle integrated over time (note: not the same as error)
    */
    Thetad = 0;
-   AccumV += vL*delta_t;//integral of velocity over time 
+   float Dis = (totalDistanceRight+totalDistanceLeft)/2;
+//   AccumVL += vL*delta_t;//integral of velocity over time 
+   error1L = Thetad - angleRad + (Kt*Dis);
+   error1AccumL += error1L*delta_t; //integral of error over time;
+   VdL = Kp*(error1L) + Ki*(error1AccumL);
 
-   error1 = Thetad - angleRad + (Kt*AccumV);
-   error1Accum += error1*delta_t; //integral of error over time;
+   error2L = VdL - vL;
+   error2AccumL += error2L*delta_t; //integral of error over time
+   PWML = Jp*(error2L) + Ji*(error2AccumL);
 
-   Vd = Kp*(error1) + Ki*(error1Accum);
 
-   error2 = Vd - vL;
+//   AccumVR += vR*delta_t;//integral of velocity over time 
+   error1R = Thetad - angleRad + (Kt*totalDistanceRight);
+   error1AccumR += error1R*delta_t; //integral of error over time;
+   VdR = Kp*(error1R) + Ki*(error1AccumR);
+
+   error2R = VdR - vR;
+   error2AccumR += error2R*delta_t; //integral of error over time
+   PWMR = Jp*(error2R) + Ji*(error2AccumR);
+
+   
    //error2R = Vd - vR;
-   
-   error2Accum += error2*delta_t; //integral of error over time
    //error2AccumR += error2R*delta_t;
-
    
 
-   PWM = Jp*(error2) + Ji*(error2Accum);
    //PWMR = Jp*(error2R) + Ji*(error2AccumR);
   
    
-  leftMotorPWM = PWM;
-  rightMotorPWM = PWM;
-  Serial1.println(PWM);
-  Serial1.println(PWM);
+  leftMotorPWM = PWML;
+  rightMotorPWM = PWML;
+  Serial1.println(PWML);
+  Serial1.println(PWMR);
   Serial1.println(" ");
   Serial1.println(" ");
 }
@@ -260,9 +271,14 @@ void loop()
     armed_flag = 0;
     angle_rad_accum = 0.0;
 
-    AccumV = 0;
-    error1Accum = 0;
-    error2Accum = 0;
+    AccumVL = 0;
+    AccumVR = 0;
+
+    error1AccumL = 0;
+    error2AccumL = 0;
+    error1AccumR = 0;
+    error2AccumR = 0;
+
     //error2AccumR = 0;
   }
 
