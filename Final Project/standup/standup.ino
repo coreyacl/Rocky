@@ -112,7 +112,7 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
 
 
 //   AccumVR += vR*delta_t;//integral of velocity over time 
-   error1R = Thetad - angleRad + (Kt*totalDistanceRight);
+   error1R = Thetad - angleRad + (Kt*Dis);
    error1AccumR += error1R*delta_t; //integral of error over time;
    VdR = Kp*(error1R) + Ki*(error1AccumR);
 
@@ -120,7 +120,18 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    error2AccumR += error2R*delta_t; //integral of error over time
    PWMR = Jp*(error2R) + Ji*(error2AccumR);
 
-   
+   //qualitatively chosen
+   int lim = 200;
+
+   // variable = (if statement) ? value if true : value if false;
+   // basically caps out velocity
+   PWMR = PWMR > lim? lim : PWMR;
+   PWML = PWML > lim ? lim : PWML;
+
+   PWMR = PWMR < -lim ? -lim : PWMR;
+   PWML = PWML <- lim ? -lim : PWML;
+
+     
    //error2R = Vd - vR;
    //error2AccumR += error2R*delta_t;
    
@@ -129,7 +140,7 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
   
    
   leftMotorPWM = PWML;
-  rightMotorPWM = PWML;
+  rightMotorPWM = PWMR;
   Serial1.println(PWML);
   Serial1.println(PWMR);
   Serial1.println(" ");
@@ -281,7 +292,7 @@ void loop()
 
     //error2AccumR = 0;
   }
-
+  
   // every UPDATE_TIME_MS, if the start_flag has been set, do the balancing
   if(cur_time - prev_time > UPDATE_TIME_MS && start_flag)
   {
