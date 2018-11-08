@@ -37,7 +37,7 @@
 #define MOTOR_MAX 300
 #define MAX_SPEED 0.75  // m/s
 #define FORTY_FIVE_DEGREES_IN_RADIANS 0.78
-#define func 2
+#define func 1
 
 extern int32_t angle_accum;
 extern int32_t speedLeft;
@@ -107,7 +107,7 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    *    angleRad: the angle in radians relative to vertical (note: not the same as error)
    *    angleRadAccum: the angle integrated over time (note: not the same as error)
    */
-if(func == 1){
+if(func == 2){
    Thetad = 0;
    float Dis = (totalDistanceRight+totalDistanceLeft)/2;
 //   AccumVL += vL*delta_t;//integral of velocity over time 
@@ -140,13 +140,21 @@ if(func == 1){
    PWMR = PWMR < -lim ? -lim : PWMR;
    PWML = PWML <- lim ? -lim : PWML;
 
-}else if(func == 2){
-   Thetad = 0;
+}else if(func == 1){
+   curr_time = millis()
+
+   if(cur_time == 500) {
+     
+   }
+
+   switch(mode) { 
+   case(0):
+   Thetad = 0.01;
    error1L = Thetad - angleRad;
    error1AccumL += error1L*delta_t; //integral of error over time;
    VdL = Kp*(error1L) + Ki*(error1AccumL);
 
-   error2L = VdL - vL +2;
+   error2L = VdL - vL + 0.5;
    error2AccumL += error2L*delta_t; //integral of error over time
    PWML = Jp*(error2L) + Ji*(error2AccumL);
  
@@ -154,9 +162,28 @@ if(func == 1){
    error1AccumR += error1R*delta_t; //integral of error over time;
    VdR = Kp*(error1R) + Ki*(error1AccumR);
 
-   error2R = VdR - vR +2;
+   error2R = VdR - vR - 0.5;
    error2AccumR += error2R*delta_t; //integral of error over time
    PWMR = Jp*(error2R) + Ji*(error2AccumR);
+   }
+   else {
+   Thetad = 0;
+   error1L = Thetad - angleRad;
+   error1AccumL += error1L*delta_t; //integral of error over time;
+   VdL = Kp*(error1L) + Ki*(error1AccumL);
+
+   error2L = VdL - vL;
+   error2AccumL += error2L*delta_t; //integral of error over time
+   PWML = Jp*(error2L) + Ji*(error2AccumL);
+ 
+   error1R = Thetad - angleRad;
+   error1AccumR += error1R*delta_t; //integral of error over time;
+   VdR = Kp*(error1R) + Ki*(error1AccumR);
+
+   error2R = VdR - vR;
+   error2AccumR += error2R*delta_t; //integral of error over time
+   PWMR = Jp*(error2R) + Ji*(error2AccumR);
+   }
 
    //qualitatively chosen
    int lim = 200;
@@ -170,7 +197,7 @@ if(func == 1){
    PWML = PWML <- lim ? -lim : PWML;
     
   
-}else if(func == 3){
+}else if(func == 2){
    Thetad = 0;
    int con = 0;
 
@@ -194,7 +221,7 @@ if(func == 1){
    //qualitatively chosen
    int lim = 150;
    double mult1 = 1.5;
-   double mult2 = 1.5;
+   double mult2 = 0.5;
 
    // variable = (if statement) ? value if true : value if false;
    // basically caps out velocity
