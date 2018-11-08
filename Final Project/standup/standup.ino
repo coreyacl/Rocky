@@ -146,21 +146,21 @@ if(func == 2){
    // This function contains the code for the Spin event. 
    // ------------------------------------------------------
    Thetad = 0.01;
-   error1L = Thetad - angleRad + (Kt*Dis);
+   error1L = Thetad - angleRad;
    error1AccumL += error1L*delta_t; //integral of error over time;
-   VdL = Kp*(error1L) + Ki*(error1AccumL);
+   VdL = Kp*(error1L) + Ki*(error1AccumL) + 0.5;
 
-   error2L = VdL - vL + 0.5; // adding set velocity of 0.5 to left wheel
+   error2L = VdL - vL; // adding set velocity of 0.5 to left wheel
    error2AccumL += error2L*delta_t; //integral of error over time
    PWML = Jp*(error2L) + Ji*(error2AccumL);
  
-   error1R = Thetad - angleRad + (Kt*Dis);
+   error1R = Thetad - angleRad;
    error1AccumR += error1R*delta_t; //integral of error over time;
    VdR = Kp*(error1R) + Ki*(error1AccumR);
 
-   error2R = VdR - vR - 0.5; // subtracting set velocity from right wheel 
+   error2R = VdR - vR; // subtracting set velocity from right wheel 
    error2AccumR += error2R*delta_t; //integral of error over time
-   PWMR = Jp*(error2R) + Ji*(error2AccumR);
+   PWMR = Jp*(error2R) + Ji*(error2AccumR) - 0.5;
 
    //qualitatively chosen
    int lim = 200;
