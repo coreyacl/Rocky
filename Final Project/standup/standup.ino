@@ -37,7 +37,7 @@
 #define MOTOR_MAX 300
 #define MAX_SPEED 0.75  // m/s
 #define FORTY_FIVE_DEGREES_IN_RADIANS 0.78
-#define func 1
+#define func 1 // change this to select event: 2 for Survivor, 1 for Spin
 
 extern int32_t angle_accum;
 extern int32_t speedLeft;
@@ -107,11 +107,13 @@ void updatePWMs(float totalDistanceLeft, float totalDistanceRight, float vL, flo
    *    angleRad: the angle in radians relative to vertical (note: not the same as error)
    *    angleRadAccum: the angle integrated over time (note: not the same as error)
    */
-if(func == 2){
+if(func == 2){ 
+   // ------------------------------------------------------
+   // This function contains the code for the Survivor event. 
+   // ------------------------------------------------------
    Thetad = 0;
-   float Dis = (totalDistanceRight+totalDistanceLeft)/2;
-//   AccumVL += vL*delta_t;//integral of velocity over time 
-   error1L = Thetad - angleRad + (Kt*Dis);
+   float Dis = (totalDistanceRight+totalDistanceLeft)/2; // distance used for correction is the average of the two wheels' distances
+   error1L = Thetad - angleRad + (Kt*Dis); //
    error1AccumL += error1L*delta_t; //integral of error over time;
    VdL = Kp*(error1L) + Ki*(error1AccumL);
 
@@ -120,7 +122,6 @@ if(func == 2){
    PWML = Jp*(error2L) + Ji*(error2AccumL);
 
 
-//   AccumVR += vR*delta_t;//integral of velocity over time 
    error1R = Thetad - angleRad + (Kt*Dis);
    error1AccumR += error1R*delta_t; //integral of error over time;
    VdR = Kp*(error1R) + Ki*(error1AccumR);
@@ -140,50 +141,26 @@ if(func == 2){
    PWMR = PWMR < -lim ? -lim : PWMR;
    PWML = PWML <- lim ? -lim : PWML;
 
-}else if(func == 1){
-   curr_time = millis()
-
-   if(cur_time == 500) {
-     
-   }
-
-   switch(mode) { 
-   case(0):
+}else if(func == 1){ 
+   // ------------------------------------------------------
+   // This function contains the code for the Spin event. 
+   // ------------------------------------------------------
    Thetad = 0.01;
-   error1L = Thetad - angleRad;
+   error1L = Thetad - angleRad + (Kt*Dis);
    error1AccumL += error1L*delta_t; //integral of error over time;
    VdL = Kp*(error1L) + Ki*(error1AccumL);
 
-   error2L = VdL - vL + 0.5;
+   error2L = VdL - vL + 0.5; // adding set velocity of 0.5 to left wheel
    error2AccumL += error2L*delta_t; //integral of error over time
    PWML = Jp*(error2L) + Ji*(error2AccumL);
  
-   error1R = Thetad - angleRad;
+   error1R = Thetad - angleRad + (Kt*Dis);
    error1AccumR += error1R*delta_t; //integral of error over time;
    VdR = Kp*(error1R) + Ki*(error1AccumR);
 
-   error2R = VdR - vR - 0.5;
+   error2R = VdR - vR - 0.5; // subtracting set velocity from right wheel 
    error2AccumR += error2R*delta_t; //integral of error over time
    PWMR = Jp*(error2R) + Ji*(error2AccumR);
-   }
-   else {
-   Thetad = 0;
-   error1L = Thetad - angleRad;
-   error1AccumL += error1L*delta_t; //integral of error over time;
-   VdL = Kp*(error1L) + Ki*(error1AccumL);
-
-   error2L = VdL - vL;
-   error2AccumL += error2L*delta_t; //integral of error over time
-   PWML = Jp*(error2L) + Ji*(error2AccumL);
- 
-   error1R = Thetad - angleRad;
-   error1AccumR += error1R*delta_t; //integral of error over time;
-   VdR = Kp*(error1R) + Ki*(error1AccumR);
-
-   error2R = VdR - vR;
-   error2AccumR += error2R*delta_t; //integral of error over time
-   PWMR = Jp*(error2R) + Ji*(error2AccumR);
-   }
 
    //qualitatively chosen
    int lim = 200;
@@ -234,13 +211,9 @@ if(func == 2){
    PWMR *= mult1;
    PWML *= mult2;     
   
-}
-
-
-   //PWMR = Jp*(error2R) + Ji*(error2AccumR);
-  
+}  
    
-  leftMotorPWM = PWML;
+  leftMotorPWM = PWML; // send PWM values to motors
   rightMotorPWM = PWMR;
   Serial1.println(PWML);
   Serial1.println(PWMR);
